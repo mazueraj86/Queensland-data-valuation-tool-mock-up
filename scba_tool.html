@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queensland Data Valuation Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-10 border border-gray-200">
+
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Queensland Data Valuation Tool</h1>
+            <p class="text-lg text-gray-600">A Social Cost-Benefit Analysis based framework to evaluate value of data</p>
+        </div>
+
+        <!-- Project Details Section -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">1. Project Details</h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <label class="block">
+                    <span class="text-gray-700 font-medium">Project Name</span>
+                    <input type="text" id="projectName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700 font-medium">Department/Agency</span>
+                    <input type="text" id="department" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                </label>
+            </div>
+        </div>
+
+        <!-- Costs Section -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">2. Identify Financial and Non-Financial Costs</h2>
+            <p class="text-sm text-gray-500 mb-4">Enter the estimated financial costs (AU$) and use a valuation score (1-10) for non-financial costs.</p>
+
+            <div class="space-y-4">
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-1">Financial Costs (AU$)</h3>
+                    <input type="number" id="financialCost" class="w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="e.g., 500000" oninput="calculate()">
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h3 class="font-medium text-gray-700 mb-1">Non-Financial Costs (Non-Market Valuation)</h3>
+                        <button onclick="showModal('valuationModal')" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 2v6a2 2 0 002 2h6V6H6z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-2">e.g., social displacement, privacy concerns, environmental impact.</p>
+                    <div id="nonFinancialCostsContainer" class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <input type="text" class="w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Describe the cost">
+                            <input type="number" class="w-24 rounded-md border-gray-300 shadow-sm p-2" placeholder="Score (1-10)" min="1" max="10" oninput="calculate()">
+                        </div>
+                    </div>
+                    <button onclick="addCostInput()" class="mt-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200">Add another cost</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">3. Identify Financial and Non-Financial Benefits</h2>
+            <p class="text-sm text-gray-500 mb-4">Enter the estimated financial benefits (AU$) and use a valuation score (1-10) for non-financial benefits.</p>
+
+            <div class="space-y-4">
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-1">Financial Benefits (AU$)</h3>
+                    <input type="number" id="financialBenefit" class="w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="e.g., 750000" oninput="calculate()">
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h3 class="font-medium text-gray-700 mb-1">Non-Financial Benefits (Non-Market Valuation)</h3>
+                        <button onclick="showModal('valuationModal')" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 2v6a2 2 0 002 2h6V6H6z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-2">e.g., improved public health, enhanced citizen engagement, reduced congestion.</p>
+                    <div id="nonFinancialBenefitsContainer" class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <input type="text" class="w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Describe the benefit">
+                            <input type="number" class="w-24 rounded-md border-gray-300 shadow-sm p-2" placeholder="Score (1-10)" min="1" max="10" oninput="calculate()">
+                        </div>
+                    </div>
+                    <button onclick="addBenefitInput()" class="mt-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200">Add another benefit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real Options Valuation Section -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">4. Real Options Valuation (ROV)</h2>
+            <p class="text-sm text-gray-500 mb-4">Account for future flexibility and uncertainty. A higher score indicates a more valuable option.</p>
+            <label class="block mb-2">
+                <span class="text-gray-700 font-medium">Valuation Score (1-10)</span>
+                <p class="text-xs text-gray-500 mb-2">Based on factors like option to expand, abandon, or defer.</p>
+                <input type="number" id="rovValuation" class="w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="e.g., 7" min="1" max="10" oninput="calculate()">
+            </label>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="rounded-xl shadow-inner bg-blue-50 p-6 text-center">
+            <h2 class="text-2xl font-bold text-blue-800 mb-4">5. Summary and Analysis</h2>
+            <div class="flex flex-col sm:flex-row justify-around items-center">
+                <div class="p-4 bg-white rounded-lg shadow-md w-full sm:w-1/3 mx-2 mb-4 sm:mb-0">
+                    <p class="text-sm text-gray-500">Total Financial Impact</p>
+                    <p id="totalFinancialImpact" class="text-2xl font-bold text-gray-800 mt-1">AU$0</p>
+                </div>
+                <div class="p-4 bg-white rounded-lg shadow-md w-full sm:w-1/3 mx-2 mb-4 sm:mb-0">
+                    <p class="text-sm text-gray-500">Total Non-Financial Score</p>
+                    <p id="nonFinancialScore" class="text-2xl font-bold text-gray-800 mt-1">0</p>
+                </div>
+                <div class="p-4 bg-white rounded-lg shadow-md w-full sm:w-1/3 mx-2">
+                    <p class="text-sm text-gray-500">Overall Project Viability</p>
+                    <p id="viabilityStatus" class="text-xl font-bold text-gray-800 mt-1">Neutral</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-600 mt-4">
+                <span class="font-bold">Note:</span> This analysis combines traditional financial metrics with non-market and future optionality valuations for a more holistic view.
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Non-Market Valuation Modal -->
+    <div id="valuationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal('valuationModal')">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Non-Market Valuation Methods</h2>
+            <p class="text-gray-600 mb-4">
+                Non-financial costs and benefits cannot be directly measured in monetary terms. These methods help you assign a reliable score (1-10) by providing a framework for evaluation.
+            </p>
+            <h3 class="font-semibold text-lg text-gray-700 mb-2">1. Contingent Valuation</h3>
+            <p class="text-gray-600 mb-4">
+                This method uses surveys to ask people directly what they would be willing to pay for a benefit (e.g., cleaner air) or what they would accept to tolerate a cost (e.g., noise pollution). It's useful for valuing public goods without a market price.
+            </p>
+            <h3 class="font-semibold text-lg text-gray-700 mb-2">2. Hedonic Pricing</h3>
+            <p class="text-gray-600 mb-4">
+                This method infers the value of a non-market good by observing the prices of related goods in the market. For example, you can estimate the value of a public park by looking at the difference in house prices near the park versus farther away.
+            </p>
+            <h3 class="font-semibold text-lg text-gray-700 mb-2">3. Travel Cost Method</h3>
+            <p class="text-gray-600 mb-4">
+                This method estimates the value of a recreational site by analysing how much people spend on travel, time, and other costs to visit it. It helps in valuing natural resources or public amenities.
+            </p>
+            <p class="text-sm text-gray-500 mt-4">
+                <span class="font-bold">Recommendation:</span> Use these methods to inform your score. A well-justified score will make your analysis more robust.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Function to show the modal
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        // Function to close the modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Function to add a new input for non-financial costs
+        function addCostInput() {
+            const container = document.getElementById('nonFinancialCostsContainer');
+            const newDiv = document.createElement('div');
+            newDiv.className = 'flex items-center space-x-2';
+            newDiv.innerHTML = `
+                <input type="text" class="w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Describe the cost">
+                <input type="number" class="w-24 rounded-md border-gray-300 shadow-sm p-2" placeholder="Score (1-10)" min="1" max="10" oninput="calculate()">
+            `;
+            container.appendChild(newDiv);
+        }
+
+        // Function to add a new input for non-financial benefits
+        function addBenefitInput() {
+            const container = document.getElementById('nonFinancialBenefitsContainer');
+            const newDiv = document.createElement('div');
+            newDiv.className = 'flex items-center space-x-2';
+            newDiv.innerHTML = `
+                <input type="text" class="w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Describe the benefit">
+                <input type="number" class="w-24 rounded-md border-gray-300 shadow-sm p-2" placeholder="Score (1-10)" min="1" max="10" oninput="calculate()">
+            `;
+            container.appendChild(newDiv);
+        }
+
+        // Main calculation function
+        function calculate() {
+            // Get financial values
+            const financialCost = parseFloat(document.getElementById('financialCost').value) || 0;
+            const financialBenefit = parseFloat(document.getElementById('financialBenefit').value) || 0;
+
+            // Get non-financial scores
+            let totalNonFinancialCost = 0;
+            const costInputs = document.querySelectorAll('#nonFinancialCostsContainer input[type="number"]');
+            costInputs.forEach(input => {
+                totalNonFinancialCost += parseFloat(input.value) || 0;
+            });
+
+            let totalNonFinancialBenefit = 0;
+            const benefitInputs = document.querySelectorAll('#nonFinancialBenefitsContainer input[type="number"]');
+            benefitInputs.forEach(input => {
+                totalNonFinancialBenefit += parseFloat(input.value) || 0;
+            });
+
+            const rovScore = parseFloat(document.getElementById('rovValuation').value) || 0;
+
+            // Calculate financial impact
+            const financialImpact = financialBenefit - financialCost;
+            document.getElementById('totalFinancialImpact').textContent = `AU$${financialImpact.toLocaleString()}`;
+
+            // Calculate total non-financial score, including ROV
+            const nonFinancialScore = (totalNonFinancialBenefit - totalNonFinancialCost) + rovScore;
+            document.getElementById('nonFinancialScore').textContent = nonFinancialScore;
+
+            // Determine overall viability status
+            const viabilityStatusElement = document.getElementById('viabilityStatus');
+            const combinedScore = financialImpact + (nonFinancialScore * 50000); // Simple weighting for non-financial score
+            
+            if (combinedScore > 0) {
+                viabilityStatusElement.textContent = "Highly Viable";
+                viabilityStatusElement.className = "text-xl font-bold text-green-600 mt-1";
+            } else if (combinedScore < 0) {
+                viabilityStatusElement.textContent = "Not Viable";
+                viabilityStatusElement.className = "text-xl font-bold text-red-600 mt-1";
+            } else {
+                viabilityStatusElement.textContent = "Mixed/Neutral";
+                viabilityStatusElement.className = "text-xl font-bold text-orange-600 mt-1";
+            }
+        }
+    </script>
+
+</body>
+</html>
