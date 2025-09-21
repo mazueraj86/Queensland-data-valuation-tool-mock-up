@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Valuation Tool</title>
+    <title>Queensland Data Valuation Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -26,6 +26,36 @@
         #sameCostsToggle:not(:checked) + .block .dot {
             transform: translateX(0);
         }
+        .governance-label-container {
+            @apply relative flex justify-center items-center h-8;
+        }
+        .governance-label {
+            @apply absolute px-3 py-1 rounded-full text-xs font-semibold text-white bg-gray-400 opacity-0 transition-opacity duration-300;
+        }
+        .governance-label.visible {
+            @apply opacity-100;
+        }
+        .tooltip-container {
+            @apply relative inline-block;
+        }
+        .tooltip-text {
+            @apply absolute z-10 bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 rounded-lg text-xs text-white bg-gray-800 shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none whitespace-normal;
+            max-width: 250px;
+        }
+        .tooltip-text::after {
+            content: '';
+            @apply absolute top-full left-1/2 w-0 h-0 border-8 border-transparent border-t-gray-800 -translate-x-1/2;
+        }
+        .tooltip-container:hover .tooltip-text {
+            @apply opacity-100 pointer-events-auto;
+        }
+        /* New styles for fixed-size governance label */
+        .governance-label-box {
+            @apply w-24 h-6 flex items-center justify-center text-xs font-bold rounded-md transition-colors duration-300;
+        }
+        .governance-label-box span {
+            @apply px-2 py-1;
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-8">
@@ -37,7 +67,6 @@
         </header>
 
         <main class="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <!-- Project Inputs Section -->
             <div class="md:col-span-1 space-y-6">
                 <section class="bg-blue-50 p-6 rounded-xl border border-blue-200">
                     <h2 class="text-2xl font-semibold text-blue-800 mb-4">Project Inputs</h2>
@@ -60,6 +89,33 @@
                     </div>
                 </section>
                 
+                <section class="bg-yellow-50 p-6 rounded-xl border border-yellow-200">
+                    <h2 class="text-2xl font-semibold text-yellow-800 mb-4">Governance Multiplier</h2>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Adjusts the project's value based on data quality and trust.
+                    </p>
+                    <div class="governance-label-container">
+                        <div id="governanceLabel" class="governance-label"></div>
+                    </div>
+                    <div>
+                        <label for="governanceScore" class="sr-only">Governance Score (1-10)</label>
+                        <div class="flex items-center space-x-4 mt-1">
+                            <input type="range" id="governanceScore" min="1" max="10" step="0.1" value="5" class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer">
+                            <span id="governanceScoreValue" class="text-lg font-bold text-yellow-800">5.0</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="privacyRisk" class="block text-sm font-medium text-gray-700 mt-4">Privacy & Security Risk (%)</label>
+                        <p class="text-sm text-gray-600">
+                            Estimates the potential monetary loss due to a privacy or security breach.
+                        </p>
+                        <div class="flex items-center space-x-4 mt-1">
+                            <input type="range" id="privacyRisk" min="0" max="100" value="0" class="w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer">
+                            <span id="privacyRiskValue" class="text-lg font-bold text-red-800">0%</span>
+                        </div>
+                    </div>
+                </section>
+                
                 <section class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Calculation Results</h2>
                     <div class="space-y-4">
@@ -75,10 +131,8 @@
                         </div>
                     </div>
                 </section>
-                
             </div>
 
-            <!-- Annual Cash Flows Section -->
             <div class="md:col-span-3 space-y-6">
                 <section class="bg-green-50 p-6 rounded-xl border border-green-200">
                     <h2 class="text-2xl font-semibold text-green-800 mb-4 text-center">Annual Costs & Benefits (AU$)</h2>
@@ -100,13 +154,11 @@
                             <input type="number" id="ongoingCosts" value="20000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
                         </div>
                         <div id="multipleCostsInput" class="hidden mt-4 space-y-4">
-                            <!-- Dynamically generated content for multiple costs -->
-                        </div>
+                            </div>
                     </div>
                     
                     <div id="annual-cashflows-container">
-                        <!-- Dynamically generated content -->
-                    </div>
+                        </div>
                     <div class="flex justify-center mt-6">
                         <button id="calculateBtn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-500 focus:ring-opacity-50">
                             Calculate NPV
@@ -116,7 +168,6 @@
             </div>
         </main>
         
-        <!-- Dashboard Section -->
         <div id="dashboard-container" class="mt-12 hidden">
             <section class="bg-gray-100 p-8 rounded-2xl border-2 border-gray-200">
                 <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Project Financial Dashboard</h2>
@@ -143,6 +194,13 @@
             const multipleCostsInput = document.getElementById('multipleCostsInput');
             const dashboardContainer = document.getElementById('dashboard-container');
             const npvChartCanvas = document.getElementById('npvChart');
+            
+            const governanceScoreInput = document.getElementById('governanceScore');
+            const governanceScoreValueSpan = document.getElementById('governanceScoreValue');
+            const governanceLabelDiv = document.getElementById('governanceLabel');
+            const privacyRiskInput = document.getElementById('privacyRisk');
+            const privacyRiskValueSpan = document.getElementById('privacyRiskValue');
+
             let npvChartInstance;
 
             const benefitMethods = {
@@ -161,6 +219,30 @@
             };
             
             const getRandomValue = () => Math.floor(Math.random() * 50000) + 1000;
+
+            const getGovernanceLabel = (score) => {
+                const labels = {
+                    1: { name: 'Poor', color: 'bg-red-500', tooltip: 'Data is scattered and unreliable. No privacy or security measures in place.' },
+                    2: { name: 'Fair', color: 'bg-orange-500', tooltip: 'Some organization and basic security. Inconsistent data quality and privacy measures.' },
+                    3: { name: 'Good', color: 'bg-yellow-500', tooltip: 'Consistently organized, accessible to authorized users. Data is of good quality.' },
+                    4: { name: 'Very Good', color: 'bg-lime-500', tooltip: 'Well-documented, easily integrated, and proactively secured. Data is high quality and de-identified.' },
+                    5: { name: 'Excellent', color: 'bg-green-500', tooltip: 'Data is a foundational asset with immutable history, zero-trust security, and automatic quality checks.' }
+                };
+                const rating = Math.floor(score / 2) + 1;
+                return labels[rating] || { name: 'Neutral', color: 'bg-gray-400', tooltip: 'Hover for a rating description.' };
+            };
+
+            const updateGovernanceLabel = (score) => {
+                const { name, color, tooltip } = getGovernanceLabel(score);
+                
+                governanceLabelDiv.innerHTML = `
+                    <div class="tooltip-container governance-label-box ${color}">
+                        <span>${name}</span>
+                        <span class="tooltip-text">${tooltip}</span>
+                    </div>
+                `;
+                governanceLabelDiv.classList.add('visible');
+            };
 
             const createBenefitItem = (year, type, desc, value, score, method) => {
                 const benefitId = `${type}-${year}-${crypto.randomUUID()}`;
@@ -269,7 +351,7 @@
                             const newData = newRandData[section.id];
                             newBenefit.innerHTML = createBenefitItem(i, section.id, newData.desc, newData.value, newData.score, newData.method);
                             benefitContainer.appendChild(newBenefit);
-                            updateCalculatedValue(newBenefit.querySelector('input')); // Recalculate for new row
+                            updateCalculatedValue(newBenefit.querySelector('input'));
                         };
                         yearSection.appendChild(addButton);
                     });
@@ -293,6 +375,16 @@
                     singleCostInput.classList.add('hidden');
                     multipleCostsInput.classList.remove('hidden');
                 }
+            });
+
+            governanceScoreInput.addEventListener('input', (event) => {
+                const score = parseFloat(event.target.value);
+                governanceScoreValueSpan.textContent = score.toFixed(1);
+                updateGovernanceLabel(score);
+            });
+
+            privacyRiskInput.addEventListener('input', (event) => {
+                privacyRiskValueSpan.textContent = `${parseFloat(event.target.value)}%`;
             });
 
             const updateAllCalculatedValues = () => {
@@ -319,24 +411,24 @@
                             {
                                 type: 'bar',
                                 label: 'Direct Benefits',
-                                data: [0, ...benefitData.direct], // Add a zero for year 0
-                                backgroundColor: 'rgb(16, 185, 129, 0.6)', // Emerald-500 with transparency
+                                data: [0, ...benefitData.direct],
+                                backgroundColor: 'rgb(16, 185, 129, 0.6)',
                                 stack: 'benefits',
                                 order: 1
                             },
                             {
                                 type: 'bar',
                                 label: 'Non-Market Benefits',
-                                data: [0, ...benefitData.nonmarket], // Add a zero for year 0
-                                backgroundColor: 'rgb(99, 102, 241, 0.6)', // Indigo-500 with transparency
+                                data: [0, ...benefitData.nonmarket],
+                                backgroundColor: 'rgb(99, 102, 241, 0.6)',
                                 stack: 'benefits',
                                 order: 1
                             },
                             {
                                 type: 'bar',
                                 label: 'Spillover Benefits',
-                                data: [0, ...benefitData.spillover], // Add a zero for year 0
-                                backgroundColor: 'rgb(139, 92, 246, 0.6)', // Violet-500 with transparency
+                                data: [0, ...benefitData.spillover],
+                                backgroundColor: 'rgb(139, 92, 246, 0.6)',
                                 stack: 'benefits',
                                 order: 1
                             },
@@ -357,9 +449,9 @@
                                     borderColor: ctx => {
                                         const p0 = ctx.p0.parsed.y;
                                         const p1 = ctx.p1.parsed.y;
-                                        if (p1 < 0) return 'rgb(239, 68, 68)'; // Red for a loss
-                                        if (p0 < 0 && p1 >= 0) return 'rgb(251, 191, 36)'; // Amber for break-even transition
-                                        return 'rgb(52, 211, 153)'; // Green for profit
+                                        if (p1 < 0) return 'rgb(239, 68, 68)';
+                                        if (p0 < 0 && p1 >= 0) return 'rgb(251, 191, 36)';
+                                        return 'rgb(52, 211, 153)';
                                     },
                                 }
                             }
@@ -447,6 +539,8 @@
                 const initialInvestment = parseFloat(document.getElementById('initialInvestment').value) || 0;
                 const discountRate = parseFloat(document.getElementById('discountRate').value) / 100 || 0;
                 const years = parseInt(periodsInput.value);
+                const governanceScore = parseFloat(governanceScoreInput.value);
+                const privacyRisk = parseFloat(privacyRiskInput.value) / 100;
                 
                 let totalNPV = -initialInvestment;
                 
@@ -471,7 +565,6 @@
                     let nonmarketBenefits = 0;
                     let spilloverBenefits = 0;
 
-                    // Collect and calculate direct benefits
                     const directGroups = document.querySelectorAll(`#direct-${i}-container .input-group`);
                     directGroups.forEach(group => {
                         const value = parseFloat(group.querySelector('input[type="number"]').value) || 0;
@@ -479,7 +572,6 @@
                         totalYearBenefits += value;
                     });
                     
-                    // Collect and calculate non-market benefits
                     const nonmarketGroups = document.querySelectorAll(`#nonmarket-${i}-container .input-group`);
                     nonmarketGroups.forEach(group => {
                         const score = parseFloat(group.querySelector('.score-input').value) || 0;
@@ -489,7 +581,6 @@
                         totalYearBenefits += calculatedValue;
                     });
                     
-                    // Collect and calculate spillover benefits
                     const spilloverGroups = document.querySelectorAll(`#spillover-${i}-container .input-group`);
                     spilloverGroups.forEach(group => {
                         const score = parseFloat(group.querySelector('.score-input').value) || 0;
@@ -503,22 +594,24 @@
                     benefitData.nonmarket.push(nonmarketBenefits);
                     benefitData.spillover.push(spilloverBenefits);
 
-                    const netCashFlow = totalYearBenefits - ongoingCosts; 
+                    const netCashFlow = totalYearBenefits - ongoingCosts;
                     const presentValue = netCashFlow / Math.pow(1 + discountRate, i);
                     totalNPV += presentValue;
                     
-                    // For the graph, we use the raw cash flow (not discounted)
                     labels.push(`Year ${i}`);
                     cumulativeValues.push(cumulativeValues[cumulativeValues.length - 1] + netCashFlow);
                 }
                 
-                npvResult.textContent = `$${totalNPV.toFixed(2)}`;
+                const governanceMultiplier = governanceScore / 5.0; 
+                const adjustedNPV = totalNPV * governanceMultiplier * (1 - privacyRisk);
+
+                npvResult.textContent = `$${adjustedNPV.toFixed(2)}`;
                 
-                if (totalNPV > 0) {
+                if (adjustedNPV > 0) {
                     decisionResult.textContent = 'Accept Project';
                     decisionResult.classList.remove('text-red-600', 'text-yellow-600');
                     decisionResult.classList.add('text-green-600');
-                } else if (totalNPV < 0) {
+                } else if (adjustedNPV < 0) {
                     decisionResult.textContent = 'Reject Project';
                     decisionResult.classList.remove('text-green-600', 'text-yellow-600');
                     decisionResult.classList.add('text-red-600');
@@ -535,9 +628,27 @@
                 });
             });
 
+            // Event listener for the new minimalist governance slider
+            governanceScoreInput.addEventListener('input', (event) => {
+                const score = parseFloat(event.target.value);
+                governanceScoreValueSpan.textContent = score.toFixed(1);
+                
+                const { name, color, tooltip } = getGovernanceLabel(score);
+
+                governanceLabelDiv.innerHTML = `
+                    <div class="tooltip-container governance-label-box ${color}">
+                        <span>${name}</span>
+                        <span class="tooltip-text">${tooltip}</span>
+                    </div>
+                `;
+            });
+            
+            // Initial setup on page load
             generateAnnualCashFlows(parseInt(periodsInput.value));
             generateCostInputs(parseInt(periodsInput.value));
             updateAllCalculatedValues();
+            updateGovernanceLabel(parseFloat(governanceScoreInput.value));
+
         });
     </script>
 </body>
